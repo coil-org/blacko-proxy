@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import fastifyStatic from "@fastify/static";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import fetch from 'node-fetch';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -16,7 +17,7 @@ await app.register(fastifyStatic, {
   prefix: "/"
 });
 
-// Simple proxy endpoint - Fixed version with frame-busting prevention
+// Enhanced proxy endpoint
 app.get("/proxy", async (request, reply) => {
   try {
     const targetUrl = request.query.url;
@@ -25,107 +26,177 @@ app.get("/proxy", async (request, reply) => {
       return reply.code(400).send({ error: "Missing URL parameter" });
     }
 
-    if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
-      return reply.code(400).send({ error: "Invalid URL - must start with http:// or https://" });
+    // Validate URL format
+    let decodedUrl;
+    try {
+      decodedUrl = decodeURIComponent(targetUrl);
+      if (!decodedUrl.startsWith('http://') && !decodedUrl.startsWith('https://')) {
+        return reply.code(400).send({ error: "Invalid URL - must start with http:// or https://" });
+      }
+      new URL(decodedUrl); // This will throw if invalid
+    } catch (e) {
+      return reply.code(400).send({ error: "Invalid URL format" });
     }
 
-    const response = await fetch(targetUrl, {
+    const response = await fetch(decodedUrl, {
       headers: {
-        'User-Agent': request.headers['user-agent'] || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-      }
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'DNT': '1',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1'
+      },
+      redirect: 'follow'
     });
     
-    const contentType = response.headers.get('content-type') || 'text/html';
-    let content = await response.text();
-
-    // If it's HTML, inject aggressive frame-busting prevention
-    if (contentType.includes('text/html')) {
-      // Super aggressive anti-frame-busting script
-      const framePreventionScript = `
-        <script>
-          // AGGRESSIVE frame-busting prevention
-          (function() {
-            // Override window properties
-            try {
-              Object.defineProperty(window, 'top', {
-                configurable: false,
-                get: function() { return window.self; },
-                set: function() {}
-              });
-              Object.defineProperty(window, 'parent', {
-                configurable: false,
-                get: function() { return window.self; },
-                set: function() {}
-              });
-              Object.defineProperty(window, 'frameElement', {
-                configurable: false,
-                get: function() { return null; }
-              });
-            } catch(e) {}
-            
-            // Prevent location changes
-            var originalReplace = window.location.replace;
-            var originalAssign = window.location.assign;
-            
-            window.location.replace = function(url) {
-              if (url && !url.includes(window.location.hostname)) {
-                console.log('Blocked navigation to:', url);
-                return;
-              }
-              return originalReplace.call(window.location, url);
-            };
-            
-            window.location.assign = function(url) {
-              if (url && !url.includes(window.location.hostname)) {
-                console.log('Blocked navigation to:', url);
-                return;
-              }
-              return originalAssign.call(window.location, url);
-            };
-            
-            // Intercept document.write to prevent navigation scripts
-            var originalWrite = document.write;
-            document.write = function(content) {
-              if (content && (content.includes('top.location') || content.includes('parent.location'))) {
-                console.log('Blocked frame-busting script');
-                return;
-              }
-              return originalWrite.call(document, content);
-            };
-          })();
-        </script>
-      `;
-      
-      // Insert after <head> tag or at the beginning
-      if (content.includes('<head>')) {
-        content = content.replace('<head>', '<head>' + framePreventionScript);
-      } else if (content.includes('<html>')) {
-        content = content.replace('<html>', '<html>' + framePreventionScript);
-      } else {
-        content = framePreventionScript + content;
-      }
-      
-      // Also remove any existing frame-busting scripts
-      content = content.replace(/if\s*\(\s*top\s*!==?\s*self\s*\)/gi, 'if(false)');
-      content = content.replace(/if\s*\(\s*self\s*!==?\s*top\s*\)/gi, 'if(false)');
-      content = content.replace(/top\.location\s*=/gi, '//top.location=');
-      content = content.replace(/parent\.location\s*=/gi, '//parent.location=');
+    if (!response.ok) {
+      return reply.code(response.status).send({ 
+        error: `Failed to fetch: ${response.status} ${response.statusText}` 
+      });
     }
 
-    // Set CORS headers and remove frame-blocking headers
+    const contentType = response.headers.get('content-type') || 'text/html';
+    
+    // Handle non-HTML content (images, CSS, JS)
+    if (!contentType.includes('text/html')) {
+      const buffer = await response.arrayBuffer();
+      
+      reply.header("Access-Control-Allow-Origin", "*");
+      reply.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+      reply.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+      reply.removeHeader("X-Frame-Options");
+      reply.removeHeader("Content-Security-Policy");
+      
+      return reply.type(contentType).send(Buffer.from(buffer));
+    }
+
+    // Handle HTML content with frame-busting prevention
+    let content = await response.text();
+
+    // Enhanced frame-busting prevention
+    const framePreventionScript = `
+<script>
+// ULTRA frame-busting prevention
+(function() {
+    // Override window properties
+    const overrides = ['top', 'parent', 'frameElement', 'frames', 'length', 'self'];
+    overrides.forEach(prop => {
+        try {
+            if (prop === 'top' || prop === 'parent') {
+                Object.defineProperty(window, prop, {
+                    configurable: false,
+                    get: () => window,
+                    set: () => {}
+                });
+            } else if (prop === 'frameElement') {
+                Object.defineProperty(window, prop, {
+                    configurable: false,
+                    get: () => null
+                });
+            } else if (prop === 'frames') {
+                Object.defineProperty(window, prop, {
+                    configurable: false,
+                    get: () => window
+                });
+            }
+        } catch(e) {}
+    });
+
+    // Block navigation attempts
+    const originalReplace = window.location.replace;
+    const originalAssign = window.location.assign;
+    
+    window.location.replace = function(url) {
+        console.log('Blocked replace:', url);
+        return false;
+    };
+    
+    window.location.assign = function(url) {
+        console.log('Blocked assign:', url);
+        return false;
+    };
+    
+    // Block common frame-busting scripts
+    const checkers = [
+        'top !== self',
+        'top != self', 
+        'self != top',
+        'self !== top',
+        'window.top !== window.self',
+        'window.top != window.self',
+        'parent !== self',
+        'parent != self'
+    ];
+    
+    // Override common detection methods
+    window.self = window;
+    window.top = window;
+    window.parent = window;
+    
+    // Intercept script tags
+    const originalCreateElement = document.createElement;
+    document.createElement = function(tagName) {
+        const element = originalCreateElement.call(document, tagName);
+        if (tagName.toLowerCase() === 'script') {
+            const originalSrcDescriptor = Object.getOwnPropertyDescriptor(element, 'src');
+            Object.defineProperty(element, 'src', {
+                get: () => originalSrcDescriptor?.get?.call(element),
+                set: (value) => {
+                    if (value && typeof value === 'string') {
+                        // Allow the script to load but monitor it
+                        console.log('Loading script:', value);
+                        return originalSrcDescriptor?.set?.call(element, value);
+                    }
+                }
+            });
+        }
+        return element;
+    };
+})();
+</script>
+`;
+
+    // Inject the script
+    if (content.includes('<head>')) {
+        content = content.replace('<head>', '<head>' + framePreventionScript);
+    } else {
+        content = framePreventionScript + content;
+    }
+
+    // Remove existing frame-busting scripts more aggressively
+    const bustingPatterns = [
+        /if\s*\(\s*top\s*!==?\s*self\s*\)/gi,
+        /if\s*\(\s*self\s*!==?\s*top\s*\)/gi,
+        /if\s*\(\s*parent\s*!==?\s*self\s*\)/gi,
+        /top\.location\s*=/gi,
+        /parent\.location\s*=/gi,
+        /window\.top\.location/gi,
+        /window\.parent\.location/gi,
+        /location\.replace/gi,
+        /location\.assign/gi
+    ];
+
+    bustingPatterns.forEach(pattern => {
+        content = content.replace(pattern, '// BLOCKED: $&');
+    });
+
+    // Set headers
     reply.header("Access-Control-Allow-Origin", "*");
     reply.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     reply.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
     reply.header("Cache-Control", "no-cache");
-    
-    // IMPORTANT: Remove headers that prevent iframe embedding
     reply.removeHeader("X-Frame-Options");
     reply.removeHeader("Content-Security-Policy");
 
     return reply.type(contentType).send(content);
   } catch (error) {
     console.error('Proxy error:', error);
-    return reply.code(500).send({ error: "Proxy failed: " + error.message });
+    return reply.code(500).send({ 
+      error: "Proxy failed to fetch the URL",
+      details: error.message 
+    });
   }
 });
 
@@ -150,5 +221,6 @@ app.listen({ port: PORT, host: "0.0.0.0" }, (err, address) => {
     process.exit(1);
   }
   console.log(`🚀 BLACKO Proxy running at: ${address}`);
-  console.log(`📁 Open the URL shown above or in the preview panel`);
+  console.log(`📁 Serving files from: ${join(__dirname, "public")}`);
+  console.log(`🔗 Proxy endpoint: ${address}/proxy?url=YOUR_URL`);
 });
