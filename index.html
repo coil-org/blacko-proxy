@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLACKO</title>
+    <!-- Google Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=domino_mask" />
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=BBH+Sans+Bartle&family=BBH+Sans+Hegarty&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'BBH Sans Hegarty', sans-serif;
+            background-color: #1a1a2e;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+            transition: background-image 0.1s ease;
+        }
+
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 60px;
+            background-color: rgba(30, 30, 46, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .sidebar-icon {
+            margin: 15px 0;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            transition: background-color 0.2s;
+        }
+
+        .sidebar-icon:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-icon.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .material-icons, .material-symbols-outlined {
+            font-size: 24px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Tabs */
+        .tabs-container {
+            display: flex;
+            background-color: rgba(20, 20, 35, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 0 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-x: auto;
+        }
+
+        .tab {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: rgba(40, 40, 60, 0.5);
+            margin: 5px 5px 0 5px;
+            border-radius: 8px 8px 0 0;
+            min-width: 180px;
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.2s;
+        }
+
+        .tab.active {
+            background-color: rgba(60, 60, 80, 0.8);
+        }
+
+        .tab-favicon {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            background-color: #4a4a6a;
+            border-radius: 2px;
+        }
+
+        .tab-title {
+            flex: 1;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: color 0.1s;
+        }
+
+        .tab-close {
+            margin-left: 8px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .tab-close:hover {
+            opacity: 1;
+        }
+
+        .new-tab {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            margin: 10px 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: background-color 0.2s;
+        }
+
+        .new-tab:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Home Screen */
+        .home-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .logo {
+            font-size: 40px;
+            margin-right: 10px;
+        }
+
+        .app-name {
+            font-family: 'BBH Sans Bartle', sans-serif;
+            font-size: 48px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            display: flex;
+        }
+
+        .app-name span {
+            display: inline-block;
+            transition: transform 0.3s ease, color 0.1s;
+        }
+
+        .app-name:hover span {
+            animation: bounce 0.5s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .random-description {
+            font-size: 18px;
+            margin-bottom: 30px;
+            min-height: 25px;
+            transition: color 0.1s;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 15px 20px;
+            border-radius: 30px;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            backdrop-filter: blur(10px);
+            outline: none;
+            transition: color 0.1s, background-color 0.2s;
+        }
+
+        .search-bar::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+            transition: color 0.1s;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .action-button {
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-family: 'BBH Sans Hegarty', sans-serif;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: background-color 0.2s, color 0.1s;
+        }
+
+        .action-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            position: absolute;
+            top: 0;
+            left: 60px;
+            width: 350px;
+            height: 100%;
+            background-color: rgba(30, 30, 46, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            overflow-y: auto;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 5;
+        }
+
+        .settings-panel.active {
+            transform: translateX(0);
+        }
+
+        .settings-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 24px;
+            transition: color 0.1s;
+        }
+
+        .settings-section {
+            margin-bottom: 25px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 18px;
+            transition: color 0.1s;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            margin-right: 10px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #4CAF50;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .theme-selector {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            margin-top: 10px;
+            transition: color 0.1s, background-color 0.2s;
+        }
+
+        /* Themes Panel */
+        .themes-panel {
+            position: absolute;
+            top: 0;
+            left: 60px;
+            width: 350px;
+            height: 100%;
+            background-color: rgba(30, 30, 46, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            overflow-y: auto;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 5;
+        }
+
+        .themes-panel.active {
+            transform: translateX(0);
+        }
+
+        .themes-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 24px;
+            transition: color 0.1s;
+        }
+
+        .theme-option {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .theme-option:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .theme-option.active {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .theme-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            margin-right: 15px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Themes */
+        .theme-futuristic {
+            background: url('https://i.postimg.cc/RZY9JB87/360-F-329002139-cm-Fe-AFvu47k-RIf-Du-KWKA3m-Iu-Gv-Ynbax4.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+        }
+
+        .theme-nightmare {
+            background: url('https://i.postimg.cc/kgH9RmZN/fiery-red-sky-thunderclouds-dramatic-600nw-1961326186.webp') no-repeat center center fixed;
+            background-size: cover;
+            color: #ff4d4d;
+        }
+
+        .theme-supernova {
+            background: url('https://i.postimg.cc/QdzsK3Pb/A-supernova-may-soon-be-visible-in-the-sky.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+        }
+
+        .theme-dreamscape {
+            background: url('https://i.postimg.cc/6pPw4XSG/pngtree-celestial-dreamscape-image-15908402.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #87ceeb;
+        }
+
+        /* Browser Content */
+        .browser-content {
+            position: fixed;
+            top: 0;
+            left: 60px;
+            right: 0;
+            bottom: 0;
+            display: none;
+            z-index: 100;
+        }
+
+        .browser-content.active {
+            display: block;
+        }
+
+        .browser-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 50px;
+            }
+
+            .settings-panel, .themes-panel {
+                width: 300px;
+            }
+
+            .app-name {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body class="theme-futuristic">
+    <div id="particles-js"></div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-icon" id="menu-toggle">
+                <span class="material-icons">menu</span>
+            </div>
+            <div class="sidebar-icon" id="settings-toggle">
+                <span class="material-icons">settings</span>
+            </div>
+            <div class="sidebar-icon" id="themes-toggle">
+                <span class="material-icons">brush</span>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Tabs -->
+            <div class="tabs-container">
+                <div class="tab active" data-tab="home">
+                    <div class="tab-favicon"></div>
+                    <div class="tab-title">BLACKO</div>
+                </div>
+                <div class="new-tab" id="new-tab">
+                    <span class="material-icons">add</span>
+                </div>
+            </div>
+
+            <!-- Home Screen -->
+            <div class="home-screen active" id="home-tab">
+                <div class="logo-container">
+                    <span class="material-icons logo">token</span>
+                    <div class="app-name">
+                        <span>B</span>
+                        <span>L</span>
+                        <span>A</span>
+                        <span>C</span>
+                        <span>K</span>
+                        <span>O</span>
+                    </div>
+                </div>
+                <div class="random-description" id="random-description">hello dear user</div>
+                <div class="search-container">
+                    <input type="text" class="search-bar" placeholder="type URL of site or anything ☆" id="search-input">
+                </div>
+                <div class="button-container">
+                    <button class="action-button" id="open-ab-here">Open AB Here</button>
+                    <button class="action-button" id="open-ab-cloak">Open AB Cloak</button>
+                    <button class="action-button" id="open-direct">Open Direct</button>
+                </div>
+            </div>
+
+            <!-- Browser Content -->
+            <div class="browser-content" id="browser-tab">
+                <iframe class="browser-iframe" id="browser-iframe" src="about:blank"></iframe>
+            </div>
+        </div>
+
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settings-panel">
+            <div class="settings-header">
+                <span class="material-icons" style="margin-right: 10px;">settings</span>
+                Settings
+            </div>
+
+            <div class="settings-section">
+                <div class="section-header">
+                    <span class="material-symbols-outlined" style="margin-right: 10px;">domino_mask</span>
+                    Cloaking
+                </div>
+                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="ab-cloaking-toggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span>AB Cloak Websites</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="auto-ab-cloaking-toggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span>Auto AB Cloak on Startup</span>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="section-header">
+                    <span class="material-icons" style="margin-right: 10px;">search</span>
+                    Search Engine
+                </div>
+                <select class="theme-selector" id="search-engine-select">
+                    <option value="backend">BLACKO Proxy (Recommended)</option>
+                    <option value="direct">Direct (No Proxy)</option>
+                    <option value="cors">CORS Proxy</option>
+                    <option value="allorigins">AllOrigins Proxy</option>
+                    <option value="duckduckgo">DuckDuckGo</option>
+                    <option value="google">Google</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Themes Panel -->
+        <div class="themes-panel" id="themes-panel">
+            <div class="themes-header">
+                <span class="material-icons" style="margin-right: 10px;">brush</span>
+                Themes
+            </div>
+
+            <div class="theme-option active" data-theme="futuristic">
+                <div class="theme-preview" style="background-image: url('https://i.postimg.cc/RZY9JB87/360-F-329002139-cm-Fe-AFvu47k-RIf-Du-KWKA3m-Iu-Gv-Ynbax4.jpg')"></div>
+                <div>Futuristic (default)</div>
+            </div>
+
+            <div class="theme-option" data-theme="nightmare">
+                <div class="theme-preview" style="background-image: url('https://i.postimg.cc/kgH9RmZN/fiery-red-sky-thunderclouds-dramatic-600nw-1961326186.webp')"></div>
+                <div>Nightmare</div>
+            </div>
+
+            <div class="theme-option" data-theme="supernova">
+                <div class="theme-preview" style="background-image: url('https://i.postimg.cc/QdzsK3Pb/A-supernova-may-soon-be-visible-in-the-sky.jpg')"></div>
+                <div>Supernova</div>
+            </div>
+
+            <div class="theme-option" data-theme="dreamscape">
+                <div class="theme-preview" style="background-image: url('https://i.postimg.cc/6pPw4XSG/pngtree-celestial-dreamscape-image-15908402.jpg')"></div>
+                <div>Dreamscape (im a pretty princess)</div>
+            </div>
+
+            <!-- Particle Customization Section -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <span class="material-icons" style="margin-right: 10px;">animation</span>
+                    Particle Style
+                </div>
+                <select class="theme-selector" id="particle-style-select">
+                    <option value="default">Default</option>
+                    <option value="token">Token</option>
+                    <option value="ab-mask">AB Mask</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // DOM Elements
+        const settingsPanel = document.getElementById('settings-panel');
+        const themesPanel = document.getElementById('themes-panel');
+        const settingsToggle = document.getElementById('settings-toggle');
+        const themesToggle = document.getElementById('themes-toggle');
+        const menuToggle = document.getElementById('menu-toggle');
+        const searchInput = document.getElementById('search-input');
+        const randomDescription = document.getElementById('random-description');
+        const appName = document.querySelector('.app-name');
+        const homeTab = document.getElementById('home-tab');
+        const browserTab = document.getElementById('browser-tab');
+        const browserIframe = document.getElementById('browser-iframe');
+        const abCloakingToggle = document.getElementById('ab-cloaking-toggle');
+        const autoAbCloakingToggle = document.getElementById('auto-ab-cloaking-toggle');
+        const searchEngineSelect = document.getElementById('search-engine-select');
+        const openAbHereBtn = document.getElementById('open-ab-here');
+        const openAbCloakBtn = document.getElementById('open-ab-cloak');
+        const openDirectBtn = document.getElementById('open-direct');
+        const newTabBtn = document.getElementById('new-tab');
+        const tabsContainer = document.querySelector('.tabs-container');
+        const themeOptions = document.querySelectorAll('.theme-option');
+        const particleStyleSelect = document.getElementById('particle-style-select');
+
+        // Random descriptions
+        const descriptions = [
+            "chromebooks are lowkey buns btw",
+            "an octopus has 3 hearts!",
+            "try searching something",
+            "hello dear user",
+            "keep this site a secret",
+            "iaudiusedf (my cat typed this)"
+        ];
+
+        // Special characters for hover effect
+        const specialChars = ['®', 'Ö', 'Á', 'Œ', 'Ð', 'Ñ', 'Ç', '«', 'É', 'µ', '!', '`', 'µ', '³', '°', '¦'];
+
+        // Initialize particles - FIXED VERSION
+        function initParticles(style = 'default') {
+            // Clear existing particles
+            if (window.pJSDom && window.pJSDom.length > 0) {
+                window.pJSDom[0].pJS.fn.vendors.destroypJS();
+                window.pJSDom = [];
+            }
+
+            let particleConfig = {
+                particles: {
+                    number: { value: 40, density: { enable: true, value_area: 800 } },
+                    color: { value: "#ffffff" },
+                    shape: { type: "circle" },
+                    opacity: { value: 0.5, random: true },
+                    size: { value: 3, random: { enable: true, minimumValue: 2 } },
+                    line_linked: { enable: false },
+                    move: { 
+                        enable: true, 
+                        speed: 1, 
+                        direction: "none", 
+                        random: true,
+                        out_mode: "out"
+                    }
+                },
+                interactivity: {
+                    detect_on: "canvas",
+                    events: {
+                        onhover: { enable: true, mode: "repulse" },
+                        onclick: { enable: true, mode: "push" },
+                        resize: true
+                    }
+                }
+            };
+
+            // Customize particles based on selected style
+            if (style === 'token') {
+                particleConfig.particles.color.value = "#ff6b6b";
+                particleConfig.particles.size.value = 4;
+                particleConfig.particles.move.speed = 2;
+            } else if (style === 'ab-mask') {
+                particleConfig.particles.color.value = "#4ecdc4";
+                particleConfig.particles.size.value = 5;
+                particleConfig.particles.move.speed = 1.5;
+            }
+
+            particlesJS('particles-js', particleConfig);
+        }
+
+        // Set random description
+        function setRandomDescription() {
+            const randomIndex = Math.floor(Math.random() * descriptions.length);
+            randomDescription.textContent = descriptions[randomIndex];
+        }
+
+        // Get proxy URL - FIXED VERSION WITH BACKEND PROXY
+        function getProxyUrl(url) {
+            const searchEngine = searchEngineSelect.value;
+
+            // If it's a search query (not a URL)
+            if (!url.includes('.') && !url.startsWith('http')) {
+                const searchUrl = 'https://duckduckgo.com/?q=' + encodeURIComponent(url);
+                
+                if (searchEngine === 'backend') {
+                    return '/proxy?url=' + encodeURIComponent(searchUrl);
+                } else if (searchEngine === 'duckduckgo') {
+                    return searchUrl;
+                } else if (searchEngine === 'google') {
+                    return 'https://www.google.com/search?q=' + encodeURIComponent(url);
+                } else if (searchEngine === 'cors') {
+                    return 'https://cors-anywhere.herokuapp.com/' + searchUrl;
+                } else if (searchEngine === 'allorigins') {
+                    return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(searchUrl);
+                }
+                return searchUrl;
+            }
+
+            // If it's already a full URL
+            if (url.startsWith('http')) {
+                // Use proxy for external URLs if selected
+                if (searchEngine === 'backend') {
+                    return '/proxy?url=' + encodeURIComponent(url);
+                } else if (searchEngine === 'cors') {
+                    return 'https://cors-anywhere.herokuapp.com/' + url;
+                } else if (searchEngine === 'allorigins') {
+                    return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+                }
+                return url;
+            }
+
+            // Default to https
+            const fullUrl = 'https://' + url;
+            if (searchEngine === 'backend') {
+                return '/proxy?url=' + encodeURIComponent(fullUrl);
+            }
+            return fullUrl;
+        }
+
+        // Toggle settings panel
+        settingsToggle.addEventListener('click', () => {
+            settingsPanel.classList.toggle('active');
+            themesPanel.classList.remove('active');
+        });
+
+        // Toggle themes panel
+        themesToggle.addEventListener('click', () => {
+            themesPanel.classList.toggle('active');
+            settingsPanel.classList.remove('active');
+        });
+
+        // Close panels when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!settingsPanel.contains(e.target) && !settingsToggle.contains(e.target)) {
+                settingsPanel.classList.remove('active');
+            }
+            if (!themesPanel.contains(e.target) && !themesToggle.contains(e.target)) {
+                themesPanel.classList.remove('active');
+            }
+        });
+
+        // Change theme
+        themeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const theme = option.getAttribute('data-theme');
+
+                // Update active theme option
+                document.querySelector('.theme-option.active').classList.remove('active');
+                option.classList.add('active');
+
+                // Change body theme class
+                document.body.className = `theme-${theme}`;
+
+                // Reinitialize particles with current style
+                const currentStyle = particleStyleSelect.value;
+                initParticles(currentStyle);
+            });
+        });
+
+        // Particle style change
+        particleStyleSelect.addEventListener('change', (e) => {
+            initParticles(e.target.value);
+        });
+
+        // Name hover animation
+        appName.addEventListener('mouseenter', () => {
+            const letters = appName.querySelectorAll('span');
+            letters.forEach((letter, index) => {
+                setTimeout(() => {
+                    const originalText = letter.textContent;
+                    const randomChar = specialChars[Math.floor(Math.random() * specialChars.length)];
+                    letter.textContent = randomChar;
+                    letter.dataset.original = originalText;
+                }, index * 50);
+            });
+        });
+
+        appName.addEventListener('mouseleave', () => {
+            const letters = appName.querySelectorAll('span');
+            letters.forEach((letter, index) => {
+                setTimeout(() => {
+                    if (letter.dataset.original) {
+                        letter.textContent = letter.dataset.original;
+                    }
+                }, index * 50);
+            });
+        });
+
+        // Search functionality
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = searchInput.value.trim();
+                if (query) {
+                    navigateToUrl(query, 'default');
+                }
+            }
+        });
+
+        // Navigation functions
+        function navigateToUrl(url, mode) {
+            const finalUrl = getProxyUrl(url);
+
+            if (mode === 'ab-cloak') {
+                // Open in completely new browser tab with AB cloak using about:blank
+                openAbCloakWindow(finalUrl);
+            } else {
+                // Create new tab in BLACKO with AB cloak
+                createNewTab(finalUrl, mode);
+            }
+        }
+
+        function openAbCloakWindow(url) {
+            // Open about:blank and write content to it
+            const newWindow = window.open('about:blank', '_blank');
+            
+            if (newWindow) {
+                const abContent = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>BLACKO - AB Cloaked</title>
+                        <style>
+                            body { 
+                                margin: 0; 
+                                padding: 0; 
+                                overflow: hidden; 
+                                background: #1a1a2e;
+                            }
+                            iframe { 
+                                width: 100%; 
+                                height: 100vh; 
+                                border: none; 
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <iframe src="${url}"></iframe>
+                    </body>
+                    </html>
+                `;
+                
+                newWindow.document.write(abContent);
+                newWindow.document.close();
+            }
+        }
+
+        function createNewTab(url, mode) {
+            const tabId = 'tab-' + Date.now();
+
+            // Create new tab
+            const newTab = document.createElement('div');
+            newTab.className = 'tab';
+            newTab.setAttribute('data-tab', tabId);
+
+            newTab.innerHTML = `
+                <div class="tab-favicon"></div>
+                <div class="tab-title">Loading...</div>
+                <div class="tab-close">
+                    <span class="material-icons">close</span>
+                </div>
+            `;
+
+            // Insert before new tab button
+            tabsContainer.insertBefore(newTab, newTabBtn);
+
+            // Activate the new tab
+            document.querySelector('.tab.active').classList.remove('active');
+            newTab.classList.add('active');
+
+            // Create browser content for this tab
+            const browserContent = document.createElement('div');
+            browserContent.className = 'browser-content';
+            browserContent.id = tabId;
+
+            const iframe = document.createElement('iframe');
+            iframe.className = 'browser-iframe';
+            
+            // Load the URL directly
+            iframe.src = url;
+            
+            // Set tab title - safely handle all URL types
+            let tabTitle = 'Loading...';
+            try {
+                if (url.startsWith('http://') || url.startsWith('https://')) {
+                    tabTitle = new URL(url).hostname;
+                } else if (url.startsWith('/proxy?url=')) {
+                    const proxyUrl = new URLSearchParams(url.split('?')[1]).get('url');
+                    if (proxyUrl) {
+                        tabTitle = new URL(proxyUrl).hostname;
+                    }
+                } else {
+                    tabTitle = url.substring(0, 30) + (url.length > 30 ? '...' : '');
+                }
+            } catch (e) {
+                tabTitle = 'Proxied Site';
+            }
+            newTab.querySelector('.tab-title').textContent = tabTitle;
+
+            browserContent.appendChild(iframe);
+            document.querySelector('.main-content').appendChild(browserContent);
+
+            // Show browser content
+            homeTab.classList.remove('active');
+            browserContent.classList.add('active');
+
+            // Add close functionality
+            newTab.querySelector('.tab-close').addEventListener('click', (e) => {
+                e.stopPropagation();
+                newTab.remove();
+                browserContent.remove();
+
+                // If we closed the active tab, activate the home tab
+                if (newTab.classList.contains('active')) {
+                    document.querySelector('.tab[data-tab="home"]').classList.add('active');
+                    homeTab.classList.add('active');
+                }
+            });
+
+            // Add click functionality to switch to this tab
+            newTab.addEventListener('click', (e) => {
+                // Only switch tab if not clicking the close button
+                if (!e.target.closest('.tab-close')) {
+                    document.querySelector('.tab.active')?.classList.remove('active');
+                    newTab.classList.add('active');
+
+                    document.querySelector('.browser-content.active')?.classList.remove('active');
+                    browserContent.classList.add('active');
+                    homeTab.classList.remove('active');
+                }
+            });
+
+            // Update tab title when iframe loads
+            iframe.addEventListener('load', () => {
+                try {
+                    // Try to get the title from the iframe's document
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                    if (iframeDoc && iframeDoc.title) {
+                        newTab.querySelector('.tab-title').textContent = iframeDoc.title;
+                    }
+                } catch (e) {
+                    // Cross-origin restriction, keep current title
+                }
+            });
+        }
+
+        // Button actions
+        openAbHereBtn.addEventListener('click', () => {
+            const query = searchInput.value.trim() || 'https://duckduckgo.com';
+            navigateToUrl(query, 'default');
+        });
+
+        openAbCloakBtn.addEventListener('click', () => {
+            const query = searchInput.value.trim() || 'https://duckduckgo.com';
+            navigateToUrl(query, 'ab-cloak');
+        });
+
+        openDirectBtn.addEventListener('click', () => {
+            const query = searchInput.value.trim() || 'https://duckduckgo.com';
+            navigateToUrl(query, 'direct');
+        });
+
+        // New tab functionality
+        newTabBtn.addEventListener('click', () => {
+            createNewTab('about:blank', 'home');
+
+            // Show home screen
+            homeTab.classList.add('active');
+            document.querySelector('.browser-content.active')?.classList.remove('active');
+
+            // Set random description
+            setRandomDescription();
+        });
+
+        // Tab switching for home tab
+        document.querySelector('.tab[data-tab="home"]').addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelector('.tab.active')?.classList.remove('active');
+            document.querySelector('.tab[data-tab="home"]').classList.add('active');
+
+            homeTab.classList.add('active');
+            document.querySelector('.browser-content.active')?.classList.remove('active');
+            setRandomDescription();
+        });
+
+        // Auto AB cloak on startup
+        window.addEventListener('load', () => {
+            setRandomDescription();
+
+            // Check if auto AB cloak is enabled
+            if (autoAbCloakingToggle.checked) {
+                // Create an about:blank page with BLACKO content
+                const abContent = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>BLACKO</title>
+                        <style>
+                            body { margin: 0; padding: 0; overflow: hidden; }
+                            iframe { width: 100%; height: 100vh; border: none; }
+                        </style>
+                    </head>
+                    <body>
+                        <iframe src="${window.location.href}"></iframe>
+                    </body>
+                    </html>
+                `;
+
+                const blob = new Blob([abContent], { type: 'text/html' });
+                const blobUrl = URL.createObjectURL(blob);
+                window.location.href = blobUrl;
+            }
+        });
+
+        // Initialize
+        setRandomDescription();
+        initParticles();
+    </script>
+</body>
+</html>
